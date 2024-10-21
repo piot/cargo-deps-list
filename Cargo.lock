@@ -67,7 +67,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "cargo-deps-list"
+name = "cargo-deps-order"
 version = "0.0.1"
 dependencies = [
  "anyhow",

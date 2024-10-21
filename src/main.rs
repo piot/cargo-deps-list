@@ -14,7 +14,7 @@ use std::time::Duration;
 /// A Cargo subcommand to list dependencies in a project or workspace and execute commands on them.
 #[derive(Parser, Debug)]
 #[command(
-    name = "cargo-deps-list",
+    name = "cargo-deps-order",
     version,
     about = "Lists dependencies for Cargo projects and executes specified commands on each dependency.",
     long_about = None,

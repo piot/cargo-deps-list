@@ -1,10 +1,10 @@
 [package]
-name = "cargo-deps-list"
+name = "cargo-deps-order"
 version = "0.0.1"
 edition = "2021"
 description = "A Cargo subcommand to list dependencies in a workspace and execute commands on them."
 license = "MIT"
-repository = "https://github.com/piot/cargo-deps-list"
+repository = "https://github.com/piot/cargo-deps-order"
 categories = ["cargo"]
 keywords = ["cargo"]
 
