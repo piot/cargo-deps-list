@@ -1,0 +1,14 @@
+[package]
+name = "cargo-deps-list"
+version = "0.0.1"
+edition = "2021"
+description = "A Cargo subcommand to list dependencies in a workspace and execute commands on them."
+license = "MIT"
+repository = "https://github.com/piot/cargo-deps-list"
+categories = ["cargo"]
+keywords = ["cargo"]
+
+[dependencies]
+anyhow = "1.0.90"
+cargo_metadata = "0.18.1"
+clap = { version = "4.5.20", features = ["derive"] }
