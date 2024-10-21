@@ -1,6 +1,6 @@
 [package]
 name = "cargo-deps-order"
-version = "0.0.2"
+version = "0.0.3"
 edition = "2021"
 description = "A Cargo subcommand to list dependencies in a workspace and execute commands on them."
 license = "MIT"
