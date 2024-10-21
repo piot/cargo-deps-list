@@ -1,8 +1,8 @@
 # 🚀 Cargo Deps Order 🦀
 
-![Crates.io](https://img.shields.io/crates/v/cargo-deps-list.svg)
-![License](https://img.shields.io/crates/l/cargo-deps-list.svg)
-![Downloads](https://img.shields.io/crates/d/cargo-deps-list.svg)
+![Crates.io](https://img.shields.io/crates/v/cargo-deps-order.svg)
+![License](https://img.shields.io/crates/l/cargo-deps-order.svg)
+![Downloads](https://img.shields.io/crates/d/cargo-deps-order.svg)
 
 **Cargo Deps Order** is a powerful Cargo subcommand designed to **list** all dependencies of your Rust project or workspace and **execute custom commands** on each dependency seamlessly. Whether you're managing a large workspace or a single project, this utility streamlines your workflow with ease and efficiency.
 
