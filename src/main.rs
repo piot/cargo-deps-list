@@ -7,9 +7,10 @@ use anyhow::{Context, Result};
 use cargo_metadata::{Metadata, MetadataCommand, Node};
 use clap::{arg, Parser};
 use std::collections::{HashMap, HashSet};
+use std::path::PathBuf;
 use std::process::{Command, Stdio};
-use std::thread;
 use std::time::Duration;
+use std::{env, thread};
 
 /// A Cargo subcommand to list dependencies in a project or workspace and execute commands on them.
 #[derive(Parser, Debug)]
@@ -36,7 +37,7 @@ struct Args {
 struct Dependency {
     name: String,
     version: String,
-    path: std::path::PathBuf,
+    path: PathBuf,
 }
 
 // Function to recursively visit dependencies and order them leaf-first
@@ -133,7 +134,7 @@ fn execute_command(command_template: &str, dependency: &Dependency) -> Result<()
         .replace("{version}", &dependency.version)
         .replace("{path}", dependency.path.to_str().unwrap_or(""));
 
-    // Determine the shell based on the OS
+    // Determine the shell based on the OS. TODO: Find a cleaner way to do this
     #[cfg(target_family = "unix")]
     let shell = "sh";
     #[cfg(target_family = "unix")]
@@ -161,8 +162,16 @@ fn execute_command(command_template: &str, dependency: &Dependency) -> Result<()
 }
 
 fn main() -> Result<()> {
-    // Parse command-line arguments
-    let args = Args::parse();
+    // Collect arguments from the command line
+    let mut raw_args: Vec<String> = env::args().collect();
+
+    // Determine the slice of arguments to parse based on the first argument
+    if raw_args.len() > 1 && raw_args[1] == "deps-order" {
+        raw_args.remove(1);
+    }
+
+    let args = Args::parse_from(raw_args);
+
     let workspace_only = args.workspace_only;
     let exec_command = args.exec;
     let wait_seconds = args.wait;
@@ -171,16 +180,13 @@ fn main() -> Result<()> {
         .exec()
         .context("Failed to retrieve cargo metadata")?;
 
-    // Get the dependencies in leaf-first order
     let dependencies = list_dependencies(&metadata, workspace_only);
 
-    // Print out the dependencies in the required order
     println!("Dependencies in leaf-first order:");
     for dep in &dependencies {
         println!("{}", dep.name);
     }
 
-    // If exec_command is provided, execute it for each dependency
     if let Some(command) = exec_command {
         for dep in &dependencies {
             println!("# Executing command for dependency '{}':", dep.name);
