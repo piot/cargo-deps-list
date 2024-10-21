@@ -5,8 +5,12 @@ edition = "2021"
 description = "A Cargo subcommand to list dependencies in a workspace and execute commands on them."
 license = "MIT"
 repository = "https://github.com/piot/cargo-deps-order"
-categories = ["cargo"]
-keywords = ["cargo"]
+categories = [
+    "development-tools",
+    "development-tools::cargo-plugins",
+    "command-line-utilities"
+]
+keywords = ["cargo", "dependencies"]
 
 [dependencies]
 anyhow = "1.0.90"
