@@ -2,9 +2,8 @@
  * Copyright (c) Peter Bjorklund. All rights reserved. https://github.com/piot/cargo-deps-list
  * Licensed under the MIT License. See LICENSE in the project root for license information.
  */
-
 use anyhow::{Context, Result};
-use cargo_metadata::{Metadata, MetadataCommand, Node};
+use cargo_metadata::{DependencyKind, Metadata, MetadataCommand, Node};
 use clap::{arg, Parser};
 use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
@@ -32,6 +31,21 @@ struct Args {
     /// Number of seconds to wait between executing commands for each dependency.
     #[arg(long, value_name = "SECONDS", value_parser = clap::value_parser!(u64).range(0..))]
     wait: Option<u64>,
+
+    #[arg(
+        short,
+        long,
+        value_enum,
+        help = "Specify the verbosity level for output"
+    )]
+    print: Option<PrintLevel>,
+}
+
+#[derive(clap::ValueEnum, Clone, Debug)]
+enum PrintLevel {
+    Verbose,
+    Normal,
+    Short,
 }
 
 struct Dependency {
@@ -69,6 +83,22 @@ fn visit_dep<'a>(
 }
 
 fn list_dependencies(metadata: &Metadata, workspace_only: bool) -> Vec<Dependency> {
+    // Gather all dev-dependency names
+    let dev_dependencies: HashSet<String> = metadata
+        .packages
+        .iter()
+        .flat_map(|pkg| {
+            pkg.dependencies.iter().filter_map(|dep| {
+                if dep.kind == DependencyKind::Development {
+                    Some(dep.name.clone()) // Collect the name of the dev-dependency
+                } else {
+                    None
+                }
+            })
+        })
+        .collect();
+
+    // Determine which packages to consider based on workspace_only
     let packages: HashSet<&str> = if workspace_only {
         metadata
             .workspace_members
@@ -101,6 +131,11 @@ fn list_dependencies(metadata: &Metadata, workspace_only: bool) -> Vec<Dependenc
         // If workspace_only is set, skip packages not in the workspace
         if workspace_only && !packages.contains(package.id.repr.as_str()) {
             continue;
+        }
+
+        // Skip packages that are listed in dev-dependencies
+        if dev_dependencies.contains(&package.name) {
+            continue; // Exclude dev-dependencies
         }
 
         if let Some(root_node) = dep_graph.get(package.id.repr.as_str()) {
@@ -175,6 +210,7 @@ fn main() -> Result<()> {
     let workspace_only = args.workspace_only;
     let exec_command = args.exec;
     let wait_seconds = args.wait;
+    let print = args.print;
 
     let metadata = MetadataCommand::new()
         .exec()
@@ -182,24 +218,26 @@ fn main() -> Result<()> {
 
     let dependencies = list_dependencies(&metadata, workspace_only);
 
-    println!("Dependencies in leaf-first order:");
     for dep in &dependencies {
-        println!("{}", dep.name);
-    }
+        if let Some(x) = &print {
+            match x {
+                PrintLevel::Verbose => todo!(),
+                PrintLevel::Normal => println!("{}", dep.name),
+                PrintLevel::Short => todo!(),
+            }
+        }
 
-    if let Some(command) = exec_command {
-        for dep in &dependencies {
-            println!("# Executing command for dependency '{}':", dep.name);
+        if let Some(ref command) = exec_command {
             if let Err(e) = execute_command(&command, dep) {
                 eprintln!("Error executing command for '{}': {}", dep.name, e);
             }
+        }
 
-            // If wait_seconds is specified and greater than 0, sleep for the given duration
-            if let Some(seconds) = wait_seconds {
-                if seconds > 0 {
-                    println!("Waiting for {seconds} seconds before next command...");
-                    thread::sleep(Duration::from_secs(seconds));
-                }
+        // If wait_seconds is specified and greater than 0, sleep for the given duration
+        if let Some(seconds) = wait_seconds {
+            if seconds > 0 {
+                println!("Waiting for {seconds} seconds before next command...");
+                thread::sleep(Duration::from_secs(seconds));
             }
         }
     }

@@ -13,6 +13,6 @@ categories = [
 keywords = ["cargo", "dependencies"]
 
 [dependencies]
-anyhow = "1.0.90"
+anyhow = "1.0.91"
 cargo_metadata = "0.18.1"
 clap = { version = "4.5.20", features = ["derive"] }
